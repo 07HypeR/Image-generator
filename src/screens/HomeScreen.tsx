@@ -11,6 +11,7 @@ import {
 import React, {useState} from 'react';
 import {colors, fontFamily} from '../theme';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import ImageCard from '../components/ImageCard';
 
 const HomeScreen = () => {
   const [prompt, setPrompt] = useState('');
@@ -75,7 +76,11 @@ const HomeScreen = () => {
         </Text>
       )}
 
-      {image && <View style={styles.imageWrapper}>{/* Image */}</View>}
+      {image && (
+        <View style={styles.imageWrapper}>
+          <ImageCard item={{imageUrl: image, prompt: 'Generate an ai Image'}} />
+        </View>
+      )}
 
       {/* footer */}
       {!image && (
@@ -180,5 +185,9 @@ const styles = StyleSheet.create({
     color: '#808080',
     fontFamily: fontFamily.regular,
     fontSize: 12,
+  },
+  imageWrapper: {
+    marginTop: 20,
+    alignItems: 'center',
   },
 });
