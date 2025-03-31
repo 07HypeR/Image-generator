@@ -6,9 +6,11 @@ import AntDesign from 'react-native-vector-icons/AntDesign';
 
 const LikeScreen = () => {
   const data = [];
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Liked Image</Text>
+      <View style={{height: 15}} />
       <FlatList
         data={[]}
         renderItem={({item, index}) => {
