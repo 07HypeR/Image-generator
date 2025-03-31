@@ -36,6 +36,7 @@ const DiscoverScreen = () => {
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Discover</Text>
+      <View style={{height: 15}} />
       <FlatList
         showsVerticalScrollIndicator={false}
         data={data}
