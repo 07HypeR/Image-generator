@@ -1,4 +1,11 @@
-import {Image, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {
+  Image,
+  Modal,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import React from 'react';
 import {fontFamily} from '../theme';
 import Ionicons from 'react-native-vector-icons/Ionicons';
@@ -9,6 +16,7 @@ const ImageCard = ({item}) => {
     <View style={styles.imageCard}>
       {/* image */}
       <Image source={{uri: item.imageUrl}} style={styles.image} />
+
       {/* prompt */}
       <Text style={styles.promptText}>{item?.prompt || 'No Prompt'}</Text>
 
@@ -27,6 +35,22 @@ const ImageCard = ({item}) => {
           <AntDesign name={'hearto'} size={20} color={'#fff'} />
         </TouchableOpacity>
       </View>
+
+      {/* modal container */}
+      <Modal transparent={true} visible={false} animationType="fade">
+        <View style={styles.overlay}>
+          <View style={styles.progressContainer}>
+            <Text style={styles.progressTitle}>Downloading Image</Text>
+            <Text style={styles.progressText}>20%</Text>
+            <Text style={styles.progressDescription}>
+              Please wait while we downloading your image.
+            </Text>
+            <View style={styles.progressBarContainer}>
+              <View style={[styles.progressBar, {width: `${20}%`}]} />
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -65,5 +89,49 @@ const styles = StyleSheet.create({
     borderColor: '#fff',
     borderRadius: 50,
     alignItems: 'center',
+  },
+  overlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+  },
+  progressContainer: {
+    width: '80%',
+    padding: 20,
+    backgroundColor: '#222',
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  progressTitle: {
+    color: '#fff',
+    fontFamily: fontFamily.bold,
+    fontSize: 18,
+    marginBottom: 10,
+  },
+  progressText: {
+    color: '#fff',
+    fontFamily: fontFamily.bold,
+    fontSize: 24,
+    marginBottom: 10,
+  },
+  progressDescription: {
+    color: '#fff',
+    fontFamily: fontFamily.regular,
+    fontSize: 14,
+    marginTop: 10,
+    textAlign: 'center',
+  },
+  progressBarContainer: {
+    width: '100%',
+    height: 10,
+    backgroundColor: '#444',
+    borderRadius: 5,
+    marginTop: 10,
+  },
+  progressBar: {
+    height: 10,
+    backgroundColor: '#76c7c0',
+    borderRadius: 5,
   },
 });
