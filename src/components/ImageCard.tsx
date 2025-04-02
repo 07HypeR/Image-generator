@@ -1,17 +1,95 @@
 import {
+  Alert,
   Image,
   Modal,
   StyleSheet,
   Text,
+  ToastAndroid,
   TouchableOpacity,
   View,
 } from 'react-native';
-import React from 'react';
+import React, {useState} from 'react';
 import {fontFamily} from '../theme';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import AntDesign from 'react-native-vector-icons/AntDesign';
+import {requestWriteStoragePermission} from '../utils';
+import ReactNativeBlobUtil from 'react-native-blob-util';
 
 const ImageCard = ({item}) => {
+  const [isDownloading, setIsDownloading] = useState(false);
+  const [downloadProgress, setDownloadProgress] = useState(0);
+
+  // // for ios permission
+  // const askPermission = permission => {
+  //   request(permission).then(result => {
+  //     console.log('result', result);
+  //   });
+  // };
+
+  const handleDownload = async () => {
+    // android permission
+    const granted = await requestWriteStoragePermission();
+    if (!granted) {
+      return;
+    }
+    // download the file
+    const imageUrl = item.imageUrl;
+    console.log('imageUrl:', imageUrl);
+
+    let PictureDir = ReactNativeBlobUtil.fs.dirs.PictureDir;
+    console.log('PictureDir:', PictureDir);
+
+    const filePath = `${PictureDir}/download_image_${Date.now()}.png`;
+    console.log('filePath:', filePath);
+    setIsDownloading(true);
+
+    ReactNativeBlobUtil.config({
+      path: filePath,
+      appendExt: 'png',
+      fileCache: true,
+      addAndroidDownloads: {
+        useDownloadManager: true,
+        notification: true,
+        path: filePath,
+        description: 'Downloading Image',
+        mime: 'image/png',
+        mediaScannable: true,
+      },
+    })
+      .fetch('GET', imageUrl)
+      .progress({interval: 100}, (received, total) => {
+        let percentage = Math.floor((received / total) * 100);
+        setDownloadProgress(percentage);
+      })
+      .then(res => {
+        ToastAndroid.show('Image Download Successfully', ToastAndroid.SHORT);
+
+        copyMediaToStorage(filePath, filePath);
+        setIsDownloading(false);
+        setDownloadProgress(0);
+      })
+      .catch(error => {
+        console.log('error', error);
+        setIsDownloading(false);
+        //set
+      });
+  };
+
+  const copyMediaToStorage = async (filePath: string, filename: string) => {
+    try {
+      await ReactNativeBlobUtil.MediaCollection.copyToMediaStore(
+        {
+          name: filename,
+          parentFolder: 'dreamai',
+          mimeType: 'image/png',
+        },
+        'Download',
+        filePath,
+      );
+    } catch (error) {
+      Alert.alert('An error occured while Saving');
+    }
+  };
   return (
     <View style={styles.imageCard}>
       {/* image */}
@@ -22,7 +100,7 @@ const ImageCard = ({item}) => {
 
       {/* button container */}
       <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.actionButton}>
+        <TouchableOpacity style={styles.actionButton} onPress={handleDownload}>
           <Ionicons name={'download-outline'} size={20} color={'#fff'} />
         </TouchableOpacity>
         <TouchableOpacity style={styles.actionButton}>
@@ -37,16 +115,18 @@ const ImageCard = ({item}) => {
       </View>
 
       {/* modal container */}
-      <Modal transparent={true} visible={false} animationType="fade">
+      <Modal transparent={true} visible={isDownloading} animationType="fade">
         <View style={styles.overlay}>
           <View style={styles.progressContainer}>
             <Text style={styles.progressTitle}>Downloading Image</Text>
-            <Text style={styles.progressText}>20%</Text>
+            <Text style={styles.progressText}>{downloadProgress}%</Text>
             <Text style={styles.progressDescription}>
               Please wait while we downloading your image.
             </Text>
             <View style={styles.progressBarContainer}>
-              <View style={[styles.progressBar, {width: `${20}%`}]} />
+              <View
+                style={[styles.progressBar, {width: `${downloadProgress}%`}]}
+              />
             </View>
           </View>
         </View>
