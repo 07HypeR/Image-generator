@@ -14,17 +14,12 @@ import Ionicons from 'react-native-vector-icons/Ionicons';
 import AntDesign from 'react-native-vector-icons/AntDesign';
 import {requestWriteStoragePermission} from '../utils';
 import ReactNativeBlobUtil from 'react-native-blob-util';
+import Share from 'react-native-share';
 
 const ImageCard = ({item}) => {
   const [isDownloading, setIsDownloading] = useState(false);
   const [downloadProgress, setDownloadProgress] = useState(0);
-
-  // // for ios permission
-  // const askPermission = permission => {
-  //   request(permission).then(result => {
-  //     console.log('result', result);
-  //   });
-  // };
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const handleDownload = async () => {
     // android permission
@@ -34,13 +29,10 @@ const ImageCard = ({item}) => {
     }
     // download the file
     const imageUrl = item.imageUrl;
-    console.log('imageUrl:', imageUrl);
 
     let PictureDir = ReactNativeBlobUtil.fs.dirs.PictureDir;
-    console.log('PictureDir:', PictureDir);
 
     const filePath = `${PictureDir}/download_image_${Date.now()}.png`;
-    console.log('filePath:', filePath);
     setIsDownloading(true);
 
     ReactNativeBlobUtil.config({
@@ -90,6 +82,62 @@ const ImageCard = ({item}) => {
       Alert.alert('An error occured while Saving');
     }
   };
+
+  const processImageToShare = async () => {
+    // android permission
+    const granted = await requestWriteStoragePermission();
+    if (!granted) {
+      return;
+    }
+    // download the file
+    const imageUrl = item.imageUrl;
+
+    let PictureDir = ReactNativeBlobUtil.fs.dirs.PictureDir;
+
+    const filePath = `${PictureDir}/download_image_${Date.now()}.png`;
+    setIsProcessing(true);
+    ReactNativeBlobUtil.config({
+      path: filePath,
+      appendExt: 'png',
+      fileCache: true,
+    })
+      .fetch('GET', imageUrl)
+      .progress({interval: 100}, (received, total) => {
+        let percentage = Math.floor((received / total) * 100);
+        setDownloadProgress(percentage);
+      })
+      .then(res => {
+        setIsProcessing(false);
+        setDownloadProgress(0);
+
+        const base64Data = res.data;
+        if (!base64Data) {
+          ToastAndroid.show('No Image to share', ToastAndroid.SHORT);
+          return;
+        }
+
+        const options = {
+          title: 'Share Image',
+          url: `file://${base64Data}`,
+          message: 'Checkout this image!',
+        };
+        Share.open(options)
+          .then(res => {
+            console.log(res);
+          })
+          .catch(err => {
+            err && console.log(err);
+          });
+      })
+      .catch(error => {
+        console.log('error', error);
+        setIsProcessing(false);
+        return null;
+      });
+  };
+  const handleShareImage = async () => {
+    const base64Data = await processImageToShare();
+  };
   return (
     <View style={styles.imageCard}>
       {/* image */}
@@ -103,7 +151,9 @@ const ImageCard = ({item}) => {
         <TouchableOpacity style={styles.actionButton} onPress={handleDownload}>
           <Ionicons name={'download-outline'} size={20} color={'#fff'} />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.actionButton}>
+        <TouchableOpacity
+          style={styles.actionButton}
+          onPress={handleShareImage}>
           <Ionicons name={'share-social-outline'} size={20} color={'#fff'} />
         </TouchableOpacity>
         <TouchableOpacity style={styles.actionButton}>
@@ -115,13 +165,19 @@ const ImageCard = ({item}) => {
       </View>
 
       {/* modal container */}
-      <Modal transparent={true} visible={isDownloading} animationType="fade">
+      <Modal
+        transparent={true}
+        visible={isDownloading || isProcessing}
+        animationType="fade">
         <View style={styles.overlay}>
           <View style={styles.progressContainer}>
-            <Text style={styles.progressTitle}>Downloading Image</Text>
+            <Text style={styles.progressTitle}>
+              {isProcessing ? 'Processing' : 'Downloading'} Image
+            </Text>
             <Text style={styles.progressText}>{downloadProgress}%</Text>
             <Text style={styles.progressDescription}>
-              Please wait while we downloading your image.
+              Please wait while we {isProcessing ? 'processing' : 'downloading'}{' '}
+              your image.
             </Text>
             <View style={styles.progressBarContainer}>
               <View
