@@ -15,6 +15,7 @@ import AntDesign from 'react-native-vector-icons/AntDesign';
 import {requestWriteStoragePermission} from '../utils';
 import ReactNativeBlobUtil from 'react-native-blob-util';
 import Share from 'react-native-share';
+import Clipboard from '@react-native-clipboard/clipboard';
 
 const ImageCard = ({item}) => {
   const [isDownloading, setIsDownloading] = useState(false);
@@ -135,9 +136,17 @@ const ImageCard = ({item}) => {
         return null;
       });
   };
+
   const handleShareImage = async () => {
     const base64Data = await processImageToShare();
   };
+
+  const handleCopyImage = () => {
+    const imageUrl = item.imageUrl;
+    Clipboard.setString(imageUrl);
+    ToastAndroid.show('Image copied successfully', ToastAndroid.SHORT);
+  };
+
   return (
     <View style={styles.imageCard}>
       {/* image */}
@@ -156,7 +165,7 @@ const ImageCard = ({item}) => {
           onPress={handleShareImage}>
           <Ionicons name={'share-social-outline'} size={20} color={'#fff'} />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.actionButton}>
+        <TouchableOpacity style={styles.actionButton} onPress={handleCopyImage}>
           <AntDesign name={'copy1'} size={20} color={'#fff'} />
         </TouchableOpacity>
         <TouchableOpacity style={styles.actionButton}>
