@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const BASE_URL = 'https://image-generation-server-phi.vercel.app/api';
+const BASE_URL = 'https://dream-ai-server.onrender.com/api';
 
 export const api = axios.create({
   baseURL: BASE_URL,
