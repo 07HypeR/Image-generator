@@ -5,6 +5,7 @@ import {
   StyleSheet,
   Text,
   TextInput,
+  ToastAndroid,
   TouchableOpacity,
   View,
 } from 'react-native';
@@ -12,18 +13,43 @@ import React, {useState} from 'react';
 import {colors, fontFamily} from '../theme';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import ImageCard from '../components/ImageCard';
+import {api} from '../utils/api';
 
 const HomeScreen = () => {
   const [prompt, setPrompt] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [image, setImage] = useState(
-    'https://m.media-amazon.com/images/S/pv-target-images/16627900db04b76fae3b64266ca161511422059cd24062fb5d900971003a0b70._SX1080_FMjpg_.jpg',
-  );
+  const [image, setImage] = useState('');
 
   const handleOpenLink = () => {
     //Open Link
     const url = 'https://github.com/07HypeR';
     Linking.openURL(url).catch(err => console.error('An error occurred', err));
+  };
+
+  const handleGenerateImage = async () => {
+    try {
+      if (!prompt.length) {
+        ToastAndroid.show(
+          'Please enter the prompt to generate image',
+          ToastAndroid.SHORT,
+        );
+        return;
+      }
+      setIsLoading(true);
+      const response = await api.post('/generate-image', {prompt: prompt});
+      console.log('Response is here:', response.data);
+
+      setImage(response.data.imageUrl);
+      setIsLoading(false);
+      ToastAndroid.show('Image generated successfully!', ToastAndroid.SHORT);
+    } catch (error) {
+      ToastAndroid.show('Something went wrong!', ToastAndroid.SHORT);
+      setIsLoading(false);
+    }
+  };
+
+  const handleClearPrompt = () => {
+    setPrompt('');
   };
 
   return (
@@ -55,7 +81,9 @@ const HomeScreen = () => {
               onChangeText={setPrompt}
             />
             {prompt ? (
-              <TouchableOpacity style={styles.clearButton}>
+              <TouchableOpacity
+                style={styles.clearButton}
+                onPress={handleClearPrompt}>
                 <Icon name={'close'} size={24} color={'#fff'} />
               </TouchableOpacity>
             ) : null}
@@ -63,7 +91,9 @@ const HomeScreen = () => {
         </View>
 
         {/* generate button */}
-        <TouchableOpacity style={styles.generateButton}>
+        <TouchableOpacity
+          style={styles.generateButton}
+          onPress={handleGenerateImage}>
           {isLoading ? (
             <ActivityIndicator size={'small'} color={'#fff'} />
           ) : (

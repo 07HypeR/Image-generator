@@ -1,37 +1,56 @@
-import {RefreshControl, StyleSheet, Text, View} from 'react-native';
-import React, {useState} from 'react';
+import {
+  ActivityIndicator,
+  RefreshControl,
+  StyleSheet,
+  Text,
+  ToastAndroid,
+  View,
+} from 'react-native';
+import React, {useEffect, useState} from 'react';
 import {fontFamily} from '../theme';
 import {FlatList} from 'react-native';
 import ImageCard from '../components/ImageCard';
+import {api} from '../utils/api';
 
 const DiscoverScreen = () => {
+  const [page, setPage] = useState<number>(1);
+  const [images, setImages] = useState([]);
+  const [hasNextPage, setHasNextPage] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
-  const data = [
-    {
-      imageUrl:
-        'https://m.media-amazon.com/images/S/pv-target-images/16627900db04b76fae3b64266ca161511422059cd24062fb5d900971003a0b70._SX1080_FMjpg_.jpg',
-      prompt: 'Generate an ai Image',
-      id: 1,
-    },
-    {
-      imageUrl:
-        'https://m.media-amazon.com/images/S/pv-target-images/16627900db04b76fae3b64266ca161511422059cd24062fb5d900971003a0b70._SX1080_FMjpg_.jpg',
-      prompt: 'Generate an ai Image',
-      id: 2,
-    },
-    {
-      imageUrl:
-        'https://m.media-amazon.com/images/S/pv-target-images/16627900db04b76fae3b64266ca161511422059cd24062fb5d900971003a0b70._SX1080_FMjpg_.jpg',
-      prompt: 'Generate an ai Image',
-      id: 3,
-    },
-  ];
+  useEffect(() => {
+    handleFetchImages();
+  }, [page]);
 
+  const handleFetchImages = async () => {
+    try {
+      setLoading(true);
+      const response = await api.get('/discover-image', {params: {page}});
+      if (page == 1) {
+        setImages(response.data.images);
+      } else {
+        setImages(prevImages => [...prevImages, ...response.data.images]);
+      }
+      let isNextPage =
+        response.data.totalPages > response.data.currentPage ? true : false;
+      setHasNextPage(isNextPage);
+      setLoading(false);
+    } catch (error) {
+      setLoading(false);
+      ToastAndroid.show('Something went wrong', ToastAndroid.SHORT);
+    }
+  };
+
+  const handleLoadMoreImages = () => {
+    if (hasNextPage) {
+      setPage(page + 1);
+    }
+  };
   const onRefresh = () => {
     setRefreshing(true);
-    // I will make an api call here
-    // setRefreshing(false);
+    setPage(1);
+    setRefreshing(false);
   };
   return (
     <View style={styles.container}>
@@ -39,11 +58,11 @@ const DiscoverScreen = () => {
       <View style={{height: 15}} />
       <FlatList
         showsVerticalScrollIndicator={false}
-        data={data}
+        data={images}
         renderItem={({item, index}) => {
           return <ImageCard item={item} />;
         }}
-        keyExtractor={item => item.id}
+        keyExtractor={item => item._id}
         contentContainerStyle={{paddingBottom: 50}}
         refreshControl={
           <RefreshControl
@@ -52,6 +71,12 @@ const DiscoverScreen = () => {
             tintColor={'#3B82F6'}
           />
         }
+        ListFooterComponent={
+          loading ? (
+            <ActivityIndicator size={'large'} color={'#3BB2F6'} />
+          ) : null
+        }
+        onEndReached={handleLoadMoreImages}
       />
     </View>
   );
