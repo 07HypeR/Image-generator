@@ -10,7 +10,9 @@ import {LikeImageProvider} from './src/context/LikeImageContext';
 import {BannerAd, BannerAdSize, TestIds} from 'react-native-google-mobile-ads';
 
 const Tab = createBottomTabNavigator();
-const adUnitId = __DEV__ ? TestIds.ADAPTIVE_BANNER : process.env.GOOGLE_UID;
+const adUnitId = __DEV__
+  ? TestIds.ADAPTIVE_BANNER
+  : 'ca-app-pub-4774721843718064/9892059622';
 
 export default function App() {
   return (

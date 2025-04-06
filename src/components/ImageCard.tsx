@@ -1,14 +1,17 @@
 import {
   Alert,
+  Button,
   Image,
   Modal,
+  Platform,
+  StatusBar,
   StyleSheet,
   Text,
   ToastAndroid,
   TouchableOpacity,
   View,
 } from 'react-native';
-import React, {useContext, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 import {fontFamily} from '../theme';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import AntDesign from 'react-native-vector-icons/AntDesign';
@@ -18,12 +21,75 @@ import Share from 'react-native-share';
 import Clipboard from '@react-native-clipboard/clipboard';
 import {LikeImagesContext} from '../context/LikeImageContext';
 
+import {
+  InterstitialAd,
+  TestIds,
+  AdEventType,
+} from 'react-native-google-mobile-ads';
+
+const adUnitId = __DEV__
+  ? TestIds.INTERSTITIAL
+  : 'ca-app-pub-4774721843718064~1885167975';
+
+const interstitial = InterstitialAd.createForAdRequest(adUnitId, {
+  keywords: ['fashion', 'clothing'],
+});
+
 const ImageCard = ({item}) => {
   const {likedImages, toogleLikeImage} = useContext(LikeImagesContext);
 
   const [isDownloading, setIsDownloading] = useState(false);
   const [downloadProgress, setDownloadProgress] = useState(0);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [loaded, setLoaded] = useState(false);
+
+  useEffect(() => {
+    const unsubscribeLoaded = interstitial.addAdEventListener(
+      AdEventType.LOADED,
+      () => {
+        setLoaded(true);
+      },
+    );
+
+    const unsubscribeOpened = interstitial.addAdEventListener(
+      AdEventType.OPENED,
+      () => {
+        if (Platform.OS === 'ios') {
+          // Prevent the close button from being unreachable by hiding the status bar on iOS
+          StatusBar.setHidden(true);
+        }
+      },
+    );
+
+    const unsubscribeClosed = interstitial.addAdEventListener(
+      AdEventType.CLOSED,
+      () => {
+        if (Platform.OS === 'ios') {
+          StatusBar.setHidden(false);
+        }
+      },
+    );
+
+    // Start loading the interstitial straight away
+    interstitial.load();
+
+    // Unsubscribe from events on unmount
+    return () => {
+      unsubscribeLoaded();
+      unsubscribeOpened();
+      unsubscribeClosed();
+    };
+  }, []);
+  // No advert ready to show yet
+  if (!loaded) {
+    return null;
+  }
+
+  const showInterestialAd = () => {
+    if (loaded) {
+      interstitial.show();
+    }
+  };
 
   const handleDownload = async () => {
     // android permission
@@ -145,6 +211,7 @@ const ImageCard = ({item}) => {
   };
 
   const handleCopyImage = () => {
+    showInterestialAd();
     const imageUrl = item.imageUrl;
     Clipboard.setString(imageUrl);
     ToastAndroid.show('Image copied successfully', ToastAndroid.SHORT);
@@ -183,6 +250,12 @@ const ImageCard = ({item}) => {
             color={isLiked ? '#ec0808' : '#fff'}
           />
         </TouchableOpacity>
+        <Button
+          title="Show Interstitial"
+          onPress={() => {
+            interstitial.show();
+          }}
+        />
       </View>
 
       {/* modal container */}
