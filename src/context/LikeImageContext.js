@@ -2,7 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import {createContext, useEffect, useState} from 'react';
 import {ToastAndroid} from 'react-native';
 
-const LikeImagesContext = createContext(null);
+export const LikeImagesContext = createContext(null);
 
 export const LikeImageProvider = ({children}) => {
   const [likedImages, setLikedImages] = useState([]);
