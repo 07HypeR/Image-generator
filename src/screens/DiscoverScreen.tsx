@@ -27,7 +27,7 @@ const DiscoverScreen = () => {
     try {
       setLoading(true);
       const response = await api.get('/discover-image', {params: {page}});
-      if (page == 1) {
+      if (page === 1) {
         setImages(response.data.images);
       } else {
         setImages(prevImages => [...prevImages, ...response.data.images]);

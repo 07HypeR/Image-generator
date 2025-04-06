@@ -50,6 +50,7 @@ const HomeScreen = () => {
 
   const handleClearPrompt = () => {
     setPrompt('');
+    setImage('');
   };
 
   return (
@@ -111,9 +112,7 @@ const HomeScreen = () => {
 
         {image && (
           <View style={styles.imageWrapper}>
-            <ImageCard
-              item={{imageUrl: image, prompt: 'Generate an ai Image'}}
-            />
+            <ImageCard item={{imageUrl: image, prompt: prompt}} />
           </View>
         )}
 
