@@ -8,7 +8,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import React, {useState} from 'react';
+import React, {useContext, useState} from 'react';
 import {fontFamily} from '../theme';
 import Ionicons from 'react-native-vector-icons/Ionicons';
 import AntDesign from 'react-native-vector-icons/AntDesign';
@@ -16,8 +16,11 @@ import {requestWriteStoragePermission} from '../utils';
 import ReactNativeBlobUtil from 'react-native-blob-util';
 import Share from 'react-native-share';
 import Clipboard from '@react-native-clipboard/clipboard';
+import {LikeImagesContext} from '../context/LikeImageContext';
 
 const ImageCard = ({item}) => {
+  const {likedImages, toogleLikeImage} = useContext(LikeImagesContext);
+
   const [isDownloading, setIsDownloading] = useState(false);
   const [downloadProgress, setDownloadProgress] = useState(0);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -147,6 +150,11 @@ const ImageCard = ({item}) => {
     ToastAndroid.show('Image copied successfully', ToastAndroid.SHORT);
   };
 
+  const handleLikeImage = () => {
+    toogleLikeImage(item);
+  };
+  const isLiked = likedImages.some(likedImages => likedImages._id == item._id);
+
   return (
     <View style={styles.imageCard}>
       {/* image */}
@@ -168,8 +176,12 @@ const ImageCard = ({item}) => {
         <TouchableOpacity style={styles.actionButton} onPress={handleCopyImage}>
           <AntDesign name={'copy1'} size={20} color={'#fff'} />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.actionButton}>
-          <AntDesign name={'hearto'} size={20} color={'#fff'} />
+        <TouchableOpacity style={styles.actionButton} onPress={handleLikeImage}>
+          <AntDesign
+            name={isLiked ? 'heart' : 'hearto'}
+            size={20}
+            color={isLiked ? '#ec0808' : '#fff'}
+          />
         </TouchableOpacity>
       </View>
 
