@@ -60,7 +60,7 @@ const HomeScreen = () => {
         showsVerticalScrollIndicator={false}>
         {/* Logo Container */}
         <View style={styles.appLogoContainer}>
-          <Text style={styles.appName}>DreamAI</Text>
+          <Text style={styles.appName}>DreamMind</Text>
           <TouchableOpacity onPress={handleOpenLink}>
             <Text style={styles.madeBy}>
               Made by {''}
