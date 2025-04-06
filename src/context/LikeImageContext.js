@@ -25,7 +25,7 @@ export const LikeImageProvider = ({children}) => {
 
     if (imageExist) {
       likedImages = likedImages.filter(item => item._id !== genImage._id);
-      ToastAndroid.show('Liked image removed successfully', ToastAndroid.SHORT);
+      ToastAndroid.show('Like removed successfully', ToastAndroid.SHORT);
     } else {
       likedImages.push(genImage);
       ToastAndroid.show('Image Liked successfully', ToastAndroid.SHORT);
