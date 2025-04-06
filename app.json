@@ -1,4 +1,7 @@
 {
   "name": "GenarateImageAi",
-  "displayName": "GenarateImageAi"
+  "displayName": "GenarateImageAi",
+  "react-native-google-mobile-ads": {
+    "android_app_id": "ca-app-pub-xxxxxxxx~xxxxxxxx"
+  }
 }
